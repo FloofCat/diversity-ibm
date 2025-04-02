@@ -5,10 +5,10 @@ import numpy as np
 import random
 
 class RADAR:
-    def __init__(self, detector_path_or_id="TrustSafeAI/RADAR-Vicuna-7B"):
+    def __init__(self, tokenizer, model):
         self.device = "cuda:0"
-        self.detector = transformers.AutoModelForSequenceClassification.from_pretrained(detector_path_or_id)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(detector_path_or_id)
+        self.detector = model
+        self.tokenizer = tokenizer
         self.detector.eval()
         self.detector.to(self.device)
         self.features = []

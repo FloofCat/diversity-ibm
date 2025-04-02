@@ -1,8 +1,8 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 class RobertaBase:
-    def __init__(self):
-        self.tokenizer = AutoTokenizer.from_pretrained("openai-community/roberta-base-openai-detector")
+    def __init__(self, tokenizer, model):
+        self.tokenizer = tokenizer
         self.model = AutoModelForSequenceClassification.from_pretrained("openai-community/roberta-base-openai-detector")
         self.features = []
         

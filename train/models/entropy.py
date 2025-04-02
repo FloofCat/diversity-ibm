@@ -2,23 +2,22 @@ import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 import random
 
-class LogRank:
+class Entropy:
     def __init__(self, model, tokenizer):
         self.tokenizer = tokenizer
         self.model = model
         self.model.eval()
         self.features = []
         
-    def compute_logrank(self, text):
-        # Compute the log-rank of the text
+    def compute_entropy(self, text):
         tokens = self.tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=1024)
         with torch.no_grad():
             outputs = self.model(tokens, labels=tokens)
         log_probs = torch.log_softmax(outputs.logits, dim=-1)
+        token_log_probs = [log_probs[0, i, token].item() for i, token in enumerate(tokens[0][1:])]
+            
+        probs = [torch.exp(torch.tensor(log_prob)) for log_prob in token_log_probs]
+        entropy = -sum([prob * torch.log(prob) for prob in probs]) / len(probs)
+     
+        return entropy.item()   
         
-        sorted_probs, indices = torch.sort(log_probs, descending=True)
-        ranks = [(indices[0, i] == tokens[0][i + 1]).nonzero(as_tuple=True)[0].item() + 1 for i in range(len(tokens[0]) - 1)]
-        
-        log_ranks = [torch.log(torch.tensor(rank, dtype=torch.float32)).item() for rank in ranks]
-        
-        return sum(log_ranks) / len(log_ranks)

@@ -11,10 +11,10 @@ from sklearn.metrics import accuracy_score, classification_report
 # -------------------------------
 # Load GPT-2 for Surprisal & Log-Likelihood Computation
 # -------------------------------
-class SurprisalModel:
-    def __init__(self):
-        self.tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-        self.model = GPT2LMHeadModel.from_pretrained("gpt2")
+class Diversity:
+    def __init__(self, model, tokenizer):
+        self.tokenizer = tokenizer
+        self.model = model
         self.model.eval()
         self.features = []
         
