@@ -15,7 +15,6 @@ class Diversity:
     def __init__(self, model, tokenizer):
         self.tokenizer = tokenizer
         self.model = model
-        self.model.eval()
         self.features = []
         
     def compute_log_likelihoods(self, text):

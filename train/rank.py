@@ -6,7 +6,6 @@ class Rank:
     def __init__(self, tokenizer, model):
         self.tokenizer = tokenizer
         self.model = model
-        self.model.eval()
         self.features = []
         
     def compute_rank(self, text):
