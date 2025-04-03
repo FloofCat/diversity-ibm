@@ -3,7 +3,7 @@ from transformers import GPT2Tokenizer, GPT2LMHeadModel
 import random
 
 class Rank:
-    def __init__(self, tokenizer, model):
+    def __init__(self, model, tokenizer):
         self.tokenizer = tokenizer
         self.model = model
         self.features = []

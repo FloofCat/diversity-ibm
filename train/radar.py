@@ -5,7 +5,7 @@ import numpy as np
 import random
 
 class RADAR:
-    def __init__(self, tokenizer, model):
+    def __init__(self, model, tokenizer):
         self.device = "cuda:0"
         self.detector = model
         self.tokenizer = tokenizer

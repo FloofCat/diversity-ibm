@@ -2,7 +2,7 @@ import torch
 import Levenshtein
 
 class RAIDAR:
-    def __init__(self, tokenizer, model):
+    def __init__(self, model, tokenizer):
         self.tokenizer = tokenizer
         self.model = model
         self.model.eval()

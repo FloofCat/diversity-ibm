@@ -45,12 +45,12 @@ class Baselines:
         self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] Loaded GPT2 model.")
 
-        self.entropy = Entropy(self.gpt2_tokenizer, self.gpt2_model)
-        self.logp = LogP(self.gpt2_tokenizer, self.gpt2_model)
-        self.logrank = LogRank(self.gpt2_tokenizer, self.gpt2_model)
-        self.detectllm = DetectLLM(self.gpt2_tokenizer, self.gpt2_model)
-        self.rank = Rank(self.gpt2_tokenizer, self.gpt2_model)
-        self.diversity = Diversity(self.gpt2_tokenizer, self.gpt2_model)
+        self.entropy = Entropy(self.gpt2_model, self.gpt2_tokenizer)
+        self.logp = LogP(self.gpt2_model, self.gpt2_tokenizer)
+        self.logrank = LogRank(self.gpt2_model, self.gpt2_tokenizer)
+        self.detectllm = DetectLLM(self.gpt2_model, self.gpt2_tokenizer)
+        self.rank = Rank(self.gpt2_model, self.gpt2_tokenizer)
+        self.diversity = Diversity(self.gpt2_model, self.gpt2_tokenizer)
 
 
         features = {
@@ -73,7 +73,7 @@ class Baselines:
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
         self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
 
-        self.roberta = RobertaBase(self.roberta_tokenizer, self.roberta_model)
+        self.roberta = RobertaBase(self.roberta_model, self.roberta_tokenizer)
 
         features = {
             "roberta": self.roberta.predict(text)
@@ -90,7 +90,7 @@ class Baselines:
         self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
         self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
 
-        self.radar = RADAR(self.radar_tokenizer, self.radar_model)
+        self.radar = RADAR(self.radar_model, self.radar_tokenizer)
 
         features = {
             "radar": self.radar.detect_probability(text)
@@ -128,7 +128,7 @@ class Baselines:
         self.raidar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/raidar", use_fast=False, trust_remote_code=True)
         self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
 
-        self.raidar = RAIDAR(self.raidar_tokenizer, self.raidar_model)
+        self.raidar = RAIDAR(self.raidar_model, self.raidar_tokenizer)
 
         features = {
             "raidar": self.raidar.compute_raidar(text)
