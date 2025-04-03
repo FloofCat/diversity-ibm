@@ -65,14 +65,15 @@ class Baselines:
         del self.gpt2_tokenizer
         del self.gpt2_model
         gc.collect()
-        torch.cuda.empty_cache() 
+        torch.cuda.empty_cache()
+        print("[LOGS] GPT2 Completed")
 
         return features
     
     def detect_roberta(self, text):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
         self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
-
+        print("[LOGS] Roberta Loaded")
         self.roberta = RobertaBase(self.roberta_model, self.roberta_tokenizer)
 
         features = {
@@ -83,12 +84,14 @@ class Baselines:
         del self.roberta_model
         gc.collect()
         torch.cuda.empty_cache() 
+        print("[LOGS] Roberta Completed")
 
         return features
 
     def detect_radar(self, text):
         self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
         self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        print("[LOGS] RADAR Loaded")
 
         self.radar = RADAR(self.radar_model, self.radar_tokenizer)
 
@@ -100,6 +103,7 @@ class Baselines:
         del self.radar_model
         gc.collect()
         torch.cuda.empty_cache() 
+        print("[LOGS] RADAR Completed")
 
         return features
 
@@ -107,7 +111,8 @@ class Baselines:
         self.binoculars_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/binoculars_observer", use_fast=False, trust_remote_code=True)
         self.binoculars_observer_model = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         self.binoculars_performer_model = self.types["binoculars_performer"].from_pretrained(f"{self.cache_dir}/binoculars_performer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
-        
+        print("[LOGS] Binoculars Loaded")
+
         self.binoculars = Binoculars(self.binoculars_observer_model, self.binoculars_performer_model, self.binoculars_tokenizer)
         self.biscope = BiScope(self.binoculars_performer_model, self.binoculars_tokenizer, self.binoculars_performer_model, self.binoculars_tokenizer)
 
@@ -121,12 +126,14 @@ class Baselines:
         del self.binoculars_observer_model
         gc.collect()
         torch.cuda.empty_cache() 
+        print("[LOGS] Binoculars Completed")
 
         return features
     
     def detect_raidar(self, text):
         self.raidar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/raidar", use_fast=False, trust_remote_code=True)
         self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        print("[LOGS] RAIDAR Loaded")
 
         self.raidar = RAIDAR(self.raidar_model, self.raidar_tokenizer)
 
@@ -138,12 +145,14 @@ class Baselines:
         del self.raidar_model
         gc.collect()
         torch.cuda.empty_cache() 
+        print("[LOGS] RAIDAR Completed")
 
         return features
 
     def detect_others(self, text):
         self.fastdetect = FastDetect()
         self.t5sentinel = T5Predictor("./model-cache/T5Sentinel.0613.pt")
+        print("[LOGS] Others Loaded")
 
         features = {
             "fastdetect": self.fastdetect.detect(text),
@@ -151,6 +160,7 @@ class Baselines:
         }
 
         self.t5sentinel.del_models()
+        print("[LOGS] Others completed")
 
         return features
 
