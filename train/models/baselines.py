@@ -150,7 +150,7 @@ class Baselines:
             "t5sentinel": self.t5sentinel.compute_t5(text)
         }
 
-        del self.t5sentinel.del_models()
+        self.t5sentinel.del_models()
 
         return features
 
