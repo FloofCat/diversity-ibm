@@ -40,20 +40,20 @@ class Baselines:
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
 
         # Load all models
-        self.gpt2_tokenizer = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
+        self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
         self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True).eval()
         
-        self.roberta_tokenizer = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
+        self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
         self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True).eval()
         
-        self.radar_tokenizer = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
+        self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
         self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True).eval()
         
-        self.binoculars_tokenizer = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", use_fast=False, trust_remote_code=True)
+        self.binoculars_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/binoculars_observer", use_fast=False, trust_remote_code=True)
         self.binoculars_observer_model = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True).eval()
         self.binoculars_performer_model = self.types["binoculars_performer"].from_pretrained(f"{self.cache_dir}/binoculars_performer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True).eval()
         
-        self.raidar_tokenizer = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", use_fast=False, trust_remote_code=True)
+        self.raidar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/raidar", use_fast=False, trust_remote_code=True)
         self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True).eval()
     
         # Load all baseline models
@@ -67,7 +67,7 @@ class Baselines:
         self.radar = RADAR(self.radar_tokenizer, self.radar_model)
         self.binoculars = Binoculars(self.binoculars_observer_model, self.binoculars_performer_model, self.binoculars_tokenizer)
         self.raidar = RAIDAR(self.raidar_tokenizer, self.binoculars_performer_model)
-        self.t5sentinel = T5Predictor("./data/checkpoint/T5Sentinel.0613.pt")
+        self.t5sentinel = T5Predictor("./model-cache/T5Sentinel.0613.pt")
         self.biscope = BiScope(self.binoculars_performer_model, self.binoculars_tokenizer, self.binoculars_performer_model, self.binoculars_tokenizer)
         
         
