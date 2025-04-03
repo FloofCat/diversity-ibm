@@ -10,7 +10,7 @@ class Downloader:
         self.types = types
         self.cache_dir = cache_dir
 
-        login(token="XXXXXXXXXXXXXXXXXX")
+        # login(token="XXXXXXXXXXXXXXXXXX")
         self.download_models()
 
     def download_models(self):
