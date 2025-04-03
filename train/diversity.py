@@ -24,7 +24,7 @@ class Diversity:
         logits = outputs.logits
         shift_logits = logits[:, :-1, :].squeeze(0)
         shift_labels = tokens[:, 1:].squeeze(0)
-        log_probs = torch.log_softmax(shift_logits, dim=-1)
+        log_probs = torch.log_softmax(shift_logits.float(), dim=-1).cuda()
         token_log_likelihoods = log_probs[range(shift_labels.shape[0]), shift_labels].cpu().numpy()
         
         return token_log_likelihoods
