@@ -57,7 +57,7 @@ class Baselines:
             "entropy": self.entropy.compute_entropy(text),
             "logp": self.logp.compute_log_p(text),
             "logrank": self.logrank.compute_logrank(text),
-            "detectllm": self.detectllm.compute_log_probs_ranks(text),
+            "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
             "rank": self.rank.compute_rank(text),
             "diversity": self.diversity.compute_features(text)
         }
