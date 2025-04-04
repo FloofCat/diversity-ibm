@@ -20,10 +20,9 @@ class T5Predictor:
             # Get model outputs (logits and hidden states)
             outputs = self.model(**inputs, output_hidden_states=True)
             logits = outputs.logits
-            hidden_states = outputs.hidden_states
         
         # Return probability of AI-generated text
-        probabilities = F.log_softmax(logits, dim=-1)
+        probabilities = F.log_softmax(logits.float(), dim=-1).cuda()
         # Return 1 number
         return probabilities[0][1].item()
     
