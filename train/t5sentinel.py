@@ -14,7 +14,7 @@ class T5Predictor:
     def compute_t5(self, text):
         # Tokenize input text
         inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-        inputs["decoder_input_ids"] = torch.tensor([[self.tokenizer.pad_token_id]], device=self.device)
+        inputs["decoder_input_ids"] = torch.tensor([[self.tokenizer.pad_token_id]], device=self.model.device)
 
         with torch.no_grad():
             # Get model outputs (logits and hidden states)
