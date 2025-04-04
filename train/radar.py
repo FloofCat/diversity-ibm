@@ -9,7 +9,6 @@ class RADAR:
         self.detector = model
         self.tokenizer = tokenizer
         self.detector.eval()
-        self.detector.to(self.device)
         self.features = []
         
     def detect_probability(self, text):
