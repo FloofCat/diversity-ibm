@@ -18,7 +18,8 @@ class RAIDAR:
         
         return rewritten_text
     
-    def compute_raidar(self, original, rewritten):
+    def compute_raidar(self, original):
+        rewritten = self.rewrite_text(original)
         lev_distance = Levenshtein.distance(original, rewritten)
         max_len = max(len(original), len(rewritten))
         return 1 - (lev_distance / max_len) if max_len > 0 else 1        
