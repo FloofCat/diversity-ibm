@@ -24,7 +24,7 @@ class T5Predictor:
         # Return probability of AI-generated text
         probabilities = F.log_softmax(logits.float(), dim=-1).cuda()
         # Return 1 number
-        return probabilities[0][1].item()
+        return probabilities[0]
     
     def del_models(self):
         del self.model
