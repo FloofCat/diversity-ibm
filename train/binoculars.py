@@ -23,14 +23,14 @@ class Binoculars:
         return binoculars_score.item()
     
     def _perplexity(self, tokens, logits):
-        log_probs = torch.log_softmax(logits, dim=-1)
+        log_probs = torch.log_softmax(logits.float(), dim=-1).cuda()
         token_log_probs = log_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]]
         perplexity = torch.exp(-torch.mean(token_log_probs))
         return perplexity.item()
     
     def _cross_perplexity(self, observer_logits, performer_logits, tokens):
-        observer_log_probs = torch.log_softmax(observer_logits, dim=-1)
-        performer_probs = torch.softmax(performer_logits, dim=-1)
+        observer_log_probs = torch.log_softmax(observer_logits.float(), dim=-1).cuda()
+        performer_probs = torch.softmax(performer_logits.float(), dim=-1).cuda()
         cross_entropy = -torch.sum(performer_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]] * 
                                    observer_log_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]])
         cross_entropy /= len(tokens[0]) - 1  # Normalize
