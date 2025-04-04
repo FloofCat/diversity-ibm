@@ -13,7 +13,7 @@ class T5Predictor:
         self.tokenizer = T5TokenizerFast.from_pretrained(backbone_name)
 
     def compute_t5(self, text):
-        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True).to(self.device)
+        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True).to(self.model.device)
 
         with torch.no_grad():
             outputs = self.model.generate(
