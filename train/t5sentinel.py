@@ -47,7 +47,7 @@ class T5Predictor:
         # Map probabilities back to their respective labels
         prob_dict = {label: probabilities[0, i].item() for i, label in enumerate(self.selected_dataset)}
 
-        return prob_dict
+        return prob_dict['Human']
 
     def del_models(self):
         del self.model
