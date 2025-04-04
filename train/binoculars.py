@@ -20,7 +20,7 @@ class Binoculars:
         x_ppl = self._cross_perplexity(observer_logits, performer_logits, tokens)
         binoculars_score = ppl / x_ppl
         
-        return binoculars_score.item()
+        return binoculars_score
     
     def _perplexity(self, tokens, logits):
         log_probs = torch.log_softmax(logits.float(), dim=-1).cuda()
