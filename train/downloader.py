@@ -3,7 +3,6 @@ import torch
 from huggingface_hub import login
 import os
 
-
 class Downloader:
     def __init__(self, models, types, cache_dir):
         self.models = models
@@ -12,6 +11,25 @@ class Downloader:
 
         # login(token="XXXXXXXXXXXXXXXXXX")
         self.download_models()
+        self.download_raid()
+    
+    def download_raid(self):
+        raid_downloads = {
+            "train": "https://dataset.raid-bench.xyz/train.csv",
+            "test": "https://dataset.raid-bench.xyz/test.csv",
+            "extra": "https://dataset.raid-bench.xyz/extra.csv"
+        }
+
+        for type, url in raid_downloads.items():
+            file_path = os.path.join(self.cache_dir + "/raid/", type + ".csv")
+
+            os.makedirs(self.cache_dir + "/raid/", exist_ok=True)
+
+            if os.path.exists(file_path):
+                print(f"[RAID] {type} has been already downloaded.")
+            else:
+                subprocess.run(["wget", "-O", file_path, url], check=True)
+                print(f"[RAID] {type} downloaded.")
 
     def download_models(self):
         for model_name, model_id in self.models.items():

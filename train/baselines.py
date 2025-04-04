@@ -1,7 +1,8 @@
 import torch
 import gc
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
+import json
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
+from raid.utils import load_data
 from diversity import Diversity
 from entropy import Entropy
 from fastdetect import FastDetect
@@ -39,8 +40,9 @@ class Baselines:
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
+        self.no_threads = 12
     
-    def detect_gpt2(self, text):
+    def detect_gpt2(self, texts):
         self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
         self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] Loaded GPT2 model.")
@@ -52,15 +54,34 @@ class Baselines:
         self.rank = Rank(self.gpt2_model, self.gpt2_tokenizer)
         self.diversity = Diversity(self.gpt2_model, self.gpt2_tokenizer)
 
+        chunk_size = len(texts) // self.no_threads
+        results = [None] * len(texts)
+        threads = []
 
-        features = {
-            "entropy": self.entropy.compute_entropy(text),
-            "logp": self.logp.compute_log_p(text),
-            "logrank": self.logrank.compute_logrank(text),
-            "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
-            "rank": self.rank.compute_rank(text),
-            "diversity": self.diversity.compute_features(text)
-        }
+        def _detect(start_idx, end_idx, text_chunk):
+            for i, text in enumerate(text_chunk):
+                features = {
+                    "entropy": self.entropy.compute_entropy(text),
+                    "logp": self.logp.compute_log_p(text),
+                    "logrank": self.logrank.compute_logrank(text),
+                    "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
+                    "rank": self.rank.compute_rank(text),
+                    "diversity": self.diversity.compute_features(text)
+                }
+            
+                results[start_idx + i] = features
+            print(f"[THREAD] Thread {start_idx} to {end_idx} has completed their tasks.")            
+        
+        for i in range(self.no_threads):
+            start_idx = i * chunk_size
+            end_idx = len(texts) if i == self.no_threads - 1 else (i + 1) * chunk_size
+            text_chunk = texts[start_idx:end_idx]
+            thread = threading.Thread(target=_detect, args=(start_idx, end_idx, text_chunk))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
 
         del self.gpt2_tokenizer
         del self.gpt2_model
@@ -68,7 +89,7 @@ class Baselines:
         torch.cuda.empty_cache()
         print("[LOGS] GPT2 Completed")
 
-        return features
+        return results
     
     def detect_roberta(self, text):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
@@ -180,8 +201,17 @@ class Baselines:
     
 # Example testing
 baselines = Baselines()
-sample_text = """
-The academic paper titled "FUTURE-AI: Guiding Principles and Consensus Recommendations for Trustworthy Artificial Intelligence in Future Medical Imaging" presents a set of guiding principles and consensus recommendations for the development and implementation of trustworthy artificial intelligence (AI) in medical imaging. The paper emphasizes the importance of AI in improving the accuracy and efficiency of medical diagnosis and treatment, while also acknowledging the potential risks and challenges associated with the use of AI in healthcare. The paper proposes a set of guiding principles and recommendations that aim to ensure the responsible and ethical development and use of AI in medical imaging, including transparency, accountability, and patient-centeredness. Overall, the paper provides valuable insights and guidance for researchers, practitioners, and policymakers involved in the development and implementation of AI in medical imaging.
-"""
+# sample_text = """
+# The academic paper titled "FUTURE-AI: Guiding Principles and Consensus Recommendations for Trustworthy Artificial Intelligence in Future Medical Imaging" presents a set of guiding principles and consensus recommendations for the development and implementation of trustworthy artificial intelligence (AI) in medical imaging. The paper emphasizes the importance of AI in improving the accuracy and efficiency of medical diagnosis and treatment, while also acknowledging the potential risks and challenges associated with the use of AI in healthcare. The paper proposes a set of guiding principles and recommendations that aim to ensure the responsible and ethical development and use of AI in medical imaging, including transparency, accountability, and patient-centeredness. Overall, the paper provides valuable insights and guidance for researchers, practitioners, and policymakers involved in the development and implementation of AI in medical imaging.
+# """
 
-print(baselines.detect(sample_text))
+# print(baselines.detect(sample_text))
+train_df = pd.read_csv(self.cache_dir + "/raid/train.csv")
+texts = train_df["generation"][:5000].tolist()
+
+features = self.detect_gpt2(texts)
+
+with open(self.cache_dir + "/gpt2_features.json", "w") as f:
+    json.dump(features, f, indent=4)
+
+print("[LOGS] Features saved to gpt2_features.json")
