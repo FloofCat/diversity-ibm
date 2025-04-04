@@ -7,7 +7,7 @@ class T5Predictor:
     def __init__(self, model_path: str, backbone_name: str = "t5-small"):
         # Load model and tokenizer
         self.model = T5ForConditionalGeneration.from_pretrained(backbone_name)
-        self.model.load_state_dict(torch.load(model_path)["model"])
+        self.model.load_state_dict(torch.load(model_path)["model"], strict=False)
         self.model.eval()
         self.tokenizer = T5TokenizerFast.from_pretrained(backbone_name)
 
