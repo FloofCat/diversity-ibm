@@ -18,7 +18,7 @@ class BiScope:
         if self.summary_model:
             input_text = f"Write a title for this text: {text}\nJust output the title:"
             summary_ids = self.summary_tokenizer(input_text, return_tensors='pt', max_length=1024, truncation=True).input_ids.to(self.summary_model.device)
-            summary_output = self.summary_model.generate(summary_ids, max_length=128, num_return_sequences=1, temperature=0.0)
+            summary_output = self.summary_model.generate(summary_ids, max_length=1024, num_return_sequences=1, temperature=0.0)
             summary_text = self.summary_tokenizer.decode(summary_output[0], skip_special_tokens=True).strip()
             return summary_text
         return ''
