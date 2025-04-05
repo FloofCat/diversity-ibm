@@ -206,12 +206,12 @@ baselines = Baselines()
 # """
 
 # print(baselines.detect(sample_text))
-train_df = pd.read_csv(self.cache_dir + "/raid/train.csv")
+train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
 texts = train_df["generation"][:5000].tolist()
 
-features = self.detect_gpt2(texts)
+features = baselines.detect_gpt2(texts)
 
-with open(self.cache_dir + "/gpt2_features.json", "w") as f:
+with open(baselines.cache_dir + "/gpt2_features.json", "w") as f:
     json.dump(features, f, indent=4)
 
 print("[LOGS] Features saved to gpt2_features.json")
