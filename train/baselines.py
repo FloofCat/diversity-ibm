@@ -226,10 +226,4 @@ train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
 texts = train_df["generation"][:5000].tolist()
 
 features = baselines.detect_gpt2(texts)
-
-features = baselines.sanitize(features)
-
-with open(baselines.cache_dir + "/gpt2_features.json", "w") as f:
-    json.dump(features, f, indent=4)
-
-print("[LOGS] Features saved to gpt2_features.json")
+print(len(features))
