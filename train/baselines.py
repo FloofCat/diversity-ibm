@@ -42,48 +42,48 @@ class Baselines:
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
-        self.no_threads = 12
+        self.no_threads = 4
     
     def detect_gpt2(self, texts):
         self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
         self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] Loaded GPT2 model.")
 
-        self.entropy = Entropy(self.gpt2_model, self.gpt2_tokenizer)
-        self.logp = LogP(self.gpt2_model, self.gpt2_tokenizer)
-        self.logrank = LogRank(self.gpt2_model, self.gpt2_tokenizer)
-        self.detectllm = DetectLLM(self.gpt2_model, self.gpt2_tokenizer)
-        self.rank = Rank(self.gpt2_model, self.gpt2_tokenizer)
-        self.diversity = Diversity(self.gpt2_model, self.gpt2_tokenizer)
+        # self.entropy = Entropy(self.gpt2_model, self.gpt2_tokenizer)
+        # self.logp = LogP(self.gpt2_model, self.gpt2_tokenizer)
+        # self.logrank = LogRank(self.gpt2_model, self.gpt2_tokenizer)
+        # self.detectllm = DetectLLM(self.gpt2_model, self.gpt2_tokenizer)
+        # self.rank = Rank(self.gpt2_model, self.gpt2_tokenizer)
+        # self.diversity = Diversity(self.gpt2_model, self.gpt2_tokenizer)
 
-        chunk_size = len(texts) // self.no_threads
-        results = [None] * len(texts)
-        threads = []
+        # chunk_size = len(texts) // self.no_threads
+        # results = [None] * len(texts)
+        # threads = []
 
-        def _detect(start_idx, end_idx, text_chunk):
-            for i, text in enumerate(text_chunk):
-                features = {
-                    "entropy": self.entropy.compute_entropy(text),
-                    "logp": self.logp.compute_log_p(text),
-                    "logrank": self.logrank.compute_logrank(text),
-                    "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
-                    "rank": self.rank.compute_rank(text),
-                    "diversity": self.diversity.compute_features(text)
-                }
+        # def _detect(start_idx, end_idx, text_chunk):
+        #     for i, text in enumerate(text_chunk):
+        #         features = {
+        #             "entropy": self.entropy.compute_entropy(text),
+        #             "logp": self.logp.compute_log_p(text),
+        #             "logrank": self.logrank.compute_logrank(text),
+        #             "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
+        #             "rank": self.rank.compute_rank(text),
+        #             "diversity": self.diversity.compute_features(text)
+        #         }
             
-                results[start_idx + i] = features
-            print(f"[THREAD] Thread {start_idx} to {end_idx} has completed their tasks.")            
+        #         results[start_idx + i] = features
+        #     print(f"[THREAD] Thread {start_idx} to {end_idx} has completed their tasks.")            
         
-        for i in range(self.no_threads):
-            start_idx = i * chunk_size
-            end_idx = len(texts) if i == self.no_threads - 1 else (i + 1) * chunk_size
-            text_chunk = texts[start_idx:end_idx]
-            thread = threading.Thread(target=_detect, args=(start_idx, end_idx, text_chunk))
-            threads.append(thread)
-            thread.start()
+        # for i in range(self.no_threads):
+        #     start_idx = i * chunk_size
+        #     end_idx = len(texts) if i == self.no_threads - 1 else (i + 1) * chunk_size
+        #     text_chunk = texts[start_idx:end_idx]
+        #     thread = threading.Thread(target=_detect, args=(start_idx, end_idx, text_chunk))
+        #     threads.append(thread)
+        #     thread.start()
 
-        for thread in threads:
-            thread.join()
+        # for thread in threads:
+        #     thread.join()
 
         del self.gpt2_tokenizer
         del self.gpt2_model
