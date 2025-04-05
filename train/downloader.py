@@ -2,6 +2,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSequen
 import torch
 from huggingface_hub import login
 import os
+import subprocess
 
 class Downloader:
     def __init__(self, models, types, cache_dir):

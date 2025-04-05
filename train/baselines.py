@@ -2,7 +2,6 @@ import torch
 import gc
 import json
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
-from raid.utils import load_data
 from diversity import Diversity
 from entropy import Entropy
 from fastdetect import FastDetect
