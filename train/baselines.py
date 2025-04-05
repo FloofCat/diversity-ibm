@@ -20,6 +20,9 @@ from t5sentinel import T5Predictor
 from biscope import BiScope
 from downloader import Downloader
 
+lim1 = 0
+lim2 = 25000
+
 class Baselines:
     def __init__(self):
         # Download models if not already downloaded
@@ -42,10 +45,34 @@ class Baselines:
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
+
+    def log_results(self, results, output_path="results.json"):
+        # Convert all NumPy data types to native Python types
+        def convert(o):
+            if isinstance(o, np.ndarray):
+                return o.tolist()
+            elif isinstance(o, (np.float32, np.float64)):
+                return float(o)
+            elif isinstance(o, (np.int32, np.int64)):
+                return int(o)
+            elif isinstance(o, dict):
+                return {k: convert(v) for k, v in o.items()}
+            elif isinstance(o, list):
+                return [convert(i) for i in o]
+            else:
+                return o
+    
+        # Apply conversion and save as JSON
+        cleaned_results = [convert(item) for item in results]
+    
+        with open(output_path, "w") as f:
+            json.dump(cleaned_results, f, indent=2)
+    
+        print(f"[LOGS] Results saved to {output_path}")
     
     def detect_gpt2(self, texts):
         self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
-        self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', trust_remote_code=True)
         print("[LOGS] Loaded GPT2 model.")
 
         self.entropy = Entropy(self.gpt2_model, self.gpt2_tokenizer)
@@ -75,15 +102,18 @@ class Baselines:
 
         return results
     
-    def detect_roberta(self, text):
+    def detect_roberta(self, texts):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
-        self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', trust_remote_code=True)
         print("[LOGS] Roberta Loaded")
         self.roberta = RobertaBase(self.roberta_model, self.roberta_tokenizer)
 
-        features = {
-            "roberta": self.roberta.predict(text)
-        }
+        results = [None] * len(texts)
+
+        for i, text in enumerate(tqdm(texts)):
+            results[i] = {
+                "roberta": self.roberta.predict(text)
+            }
 
         del self.roberta_tokenizer
         del self.roberta_model
@@ -91,18 +121,21 @@ class Baselines:
         torch.cuda.empty_cache() 
         print("[LOGS] Roberta Completed")
 
-        return features
+        return results
 
-    def detect_radar(self, text):
+    def detect_radar(self, texts):
         self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
-        self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', trust_remote_code=True)
         print("[LOGS] RADAR Loaded")
+
+        results = [None] * len(texts)
 
         self.radar = RADAR(self.radar_model, self.radar_tokenizer)
 
-        features = {
-            "radar": self.radar.detect_probability(text)
-        }
+        for i, text in enumerate(tqdm(texts)):
+            results[i] = {
+                "radar": self.radar.detect_probability(text)
+            }
 
         del self.radar_tokenizer
         del self.radar_model
@@ -110,21 +143,24 @@ class Baselines:
         torch.cuda.empty_cache() 
         print("[LOGS] RADAR Completed")
 
-        return features
+        return results
 
-    def detect_binoculars_biscope(self, text):
+    def detect_binoculars_biscope(self, texts):
         self.binoculars_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/binoculars_observer", use_fast=False, trust_remote_code=True)
-        self.binoculars_observer_model = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
-        self.binoculars_performer_model = self.types["binoculars_performer"].from_pretrained(f"{self.cache_dir}/binoculars_performer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        self.binoculars_observer_model = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", device_map='auto', trust_remote_code=True)
+        self.binoculars_performer_model = self.types["binoculars_performer"].from_pretrained(f"{self.cache_dir}/binoculars_performer", device_map='auto', trust_remote_code=True)
         print("[LOGS] Binoculars Loaded")
 
         self.binoculars = Binoculars(self.binoculars_observer_model, self.binoculars_performer_model, self.binoculars_tokenizer)
         self.biscope = BiScope(self.binoculars_performer_model, self.binoculars_tokenizer, self.binoculars_performer_model, self.binoculars_tokenizer)
 
-        features = {
-            "binoculars": self.binoculars.compute_score(text),
-            "biscope": self.biscope.extract_features(text)
-        }
+        results = [None] * len(texts)
+
+        for i, text in enumerate(tqdm(texts)):
+            results[i] = {
+                "binoculars": self.binoculars.compute_score(text),
+                "biscope": self.biscope.extract_features(text)
+            }
 
         del self.binoculars_tokenizer
         del self.binoculars_performer_model
@@ -133,18 +169,21 @@ class Baselines:
         torch.cuda.empty_cache() 
         print("[LOGS] Binoculars Completed")
 
-        return features
+        return results
     
-    def detect_raidar(self, text):
+    def detect_raidar(self, texts):
         self.raidar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/raidar", use_fast=False, trust_remote_code=True)
-        self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', trust_remote_code=True)
         print("[LOGS] RAIDAR Loaded")
 
         self.raidar = RAIDAR(self.raidar_model, self.raidar_tokenizer)
 
-        features = {
-            "raidar": self.raidar.compute_raidar(text)
-        }
+        results = [None] * len(texts)
+
+        for i, text in enumerate(tqdm(texts)):
+            results[i] = {
+                "raidar": self.raidar.compute_raidar(text)
+            }
 
         del self.raidar_tokenizer
         del self.raidar_model
@@ -152,70 +191,39 @@ class Baselines:
         torch.cuda.empty_cache() 
         print("[LOGS] RAIDAR Completed")
 
-        return features
+        return results
 
-    def detect_others(self, text):
+    def detect_others(self, texts):
         self.fastdetect = FastDetect()
         self.t5sentinel = T5Predictor("./model-cache/T5Sentinel.0613.pt")
         print("[LOGS] Others Loaded")
 
-        features = {
-            "fastdetect": self.fastdetect.detect(text),
-            "t5sentinel": self.t5sentinel.compute_t5(text)
-        }
+        results = [None] * len(texts)
+
+        for i, text in enumerate(tqdm(texts)):
+            results[i] = {
+                "fastdetect": self.fastdetect.detect(text),
+                "t5sentinel": self.t5sentinel.compute_t5(text)
+            }
 
         self.t5sentinel.del_models()
         print("[LOGS] Others completed")
 
-        return features
+        return results
 
-    def detect(self, text):
-        features = {}
-
-        # Run all detection methods and merge results
-        features.update(self.detect_gpt2(text))
-        features.update(self.detect_roberta(text))
-        features.update(self.detect_radar(text))
-        features.update(self.detect_binoculars_biscope(text))
-        features.update(self.detect_raidar(text))
-        features.update(self.detect_others(text))
-
-        return features
-    
-    def log_results(self, results, output_path="results.json"):
-        # Convert all NumPy data types to native Python types
-        def convert(o):
-            if isinstance(o, np.ndarray):
-                return o.tolist()
-            elif isinstance(o, (np.float32, np.float64)):
-                return float(o)
-            elif isinstance(o, (np.int32, np.int64)):
-                return int(o)
-            elif isinstance(o, dict):
-                return {k: convert(v) for k, v in o.items()}
-            elif isinstance(o, list):
-                return [convert(i) for i in o]
-            else:
-                return o
-    
-        # Apply conversion and save as JSON
-        cleaned_results = [convert(item) for item in results]
-    
-        with open(output_path, "w") as f:
-            json.dump(cleaned_results, f, indent=2)
-    
-        print(f"[LOGS] Results saved to {output_path}")
+    def detect(self, texts):
+        not os.path.exists("gpt2_results.json") and baselines.log_results(baselines.detect_gpt2(texts), "gpt2_results.json")
+        not os.path.exists("roberta_results.json") and baselines.log_results(baselines.detect_roberta(texts), "roberta_results.json")
+        not os.path.exists("radar_results.json") and baselines.log_results(baselines.detect_radar(texts), "radar_results.json")
+        not os.path.exists("bi_results.json") and baselines.log_results(baselines.detect_binoculars_biscope(texts), "bi_results.json")
+        not os.path.exists("raidar_results.json") and baselines.log_results(baselines.detect_raidar(texts), "raidar_results.json")
+        not os.path.exists("other_results.json") and baselines.log_results(baselines.detect_others(texts), "other_results.json")
 
     
 # Example testing
 print("What is happening? Has this docker image actually imported yet?")
 baselines = Baselines()
-# sample_text = """
-# The academic paper titled "FUTURE-AI: Guiding Principles and Consensus Recommendations for Trustworthy Artificial Intelligence in Future Medical Imaging" presents a set of guiding principles and consensus recommendations for the development and implementation of trustworthy artificial intelligence (AI) in medical imaging. The paper emphasizes the importance of AI in improving the accuracy and efficiency of medical diagnosis and treatment, while also acknowledging the potential risks and challenges associated with the use of AI in healthcare. The paper proposes a set of guiding principles and recommendations that aim to ensure the responsible and ethical development and use of AI in medical imaging, including transparency, accountability, and patient-centeredness. Overall, the paper provides valuable insights and guidance for researchers, practitioners, and policymakers involved in the development and implementation of AI in medical imaging.
-# """
 
-# print(baselines.detect(sample_text))
 train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-texts = train_df["generation"].tolist()
-
-baselines.log_results(baselines.detect_gpt2(texts), "gpt2_results.json")
+texts = train_df["generation"][lim1:lim2].tolist()
+baselines.log_results(baselines.detect_gpt2(texts), f"gpt2_results-{lim1}-{lim2}.json")
