@@ -202,14 +202,15 @@ class Baselines:
 
     
 # Example testing
+print("What is happening? Has this docker image actually imported yet?")
 baselines = Baselines()
 # sample_text = """
 # The academic paper titled "FUTURE-AI: Guiding Principles and Consensus Recommendations for Trustworthy Artificial Intelligence in Future Medical Imaging" presents a set of guiding principles and consensus recommendations for the development and implementation of trustworthy artificial intelligence (AI) in medical imaging. The paper emphasizes the importance of AI in improving the accuracy and efficiency of medical diagnosis and treatment, while also acknowledging the potential risks and challenges associated with the use of AI in healthcare. The paper proposes a set of guiding principles and recommendations that aim to ensure the responsible and ethical development and use of AI in medical imaging, including transparency, accountability, and patient-centeredness. Overall, the paper provides valuable insights and guidance for researchers, practitioners, and policymakers involved in the development and implementation of AI in medical imaging.
 # """
 
 # print(baselines.detect(sample_text))
-train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-texts = train_df["generation"][:5000].tolist()
+# train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
+# texts = train_df["generation"][:5000].tolist()
 
-features = baselines.detect_gpt2(texts)
-print(len(features))
+# features = baselines.detect_gpt2(texts)
+# print(len(features))
