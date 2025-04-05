@@ -91,7 +91,7 @@ class Baselines:
         torch.cuda.empty_cache()
         print("[LOGS] GPT2 Completed")
 
-        return results
+        return []
     
     def detect_roberta(self, text):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
