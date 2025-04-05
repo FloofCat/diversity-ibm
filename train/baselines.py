@@ -1,6 +1,7 @@
 import torch
 import gc
 import json
+import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
 from diversity import Diversity
 from entropy import Entropy
