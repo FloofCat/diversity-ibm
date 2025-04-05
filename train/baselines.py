@@ -3,7 +3,7 @@ import gc
 import json
 import pandas as pd
 import numpy as np
-import threading
+import multiprocessing as mp
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
 from diversity import Diversity
 from entropy import Entropy
@@ -42,7 +42,6 @@ class Baselines:
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
-        self.no_threads = 4
     
     def detect_gpt2(self, texts):
         self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
@@ -56,42 +55,25 @@ class Baselines:
         self.rank = Rank(self.gpt2_model, self.gpt2_tokenizer)
         self.diversity = Diversity(self.gpt2_model, self.gpt2_tokenizer)
         
-        chunk_size = len(texts) // self.no_threads
         results = [None] * len(texts)
-        threads = []
-
-        def _detect(start_idx, end_idx, text_chunk):
-            for i, text in enumerate(text_chunk):
-                features = {
-                    "entropy": self.entropy.compute_entropy(text),
-                    "logp": self.logp.compute_log_p(text),
-                    "logrank": self.logrank.compute_logrank(text),
-                    "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
-                    "rank": self.rank.compute_rank(text),
-                    "diversity": self.diversity.compute_features(text)
-                }
-            
-                results[start_idx + i] = features
-            print(f"[THREAD] Thread {start_idx} to {end_idx} has completed their tasks.")            
         
-        for i in range(self.no_threads):
-            start_idx = i * chunk_size
-            end_idx = len(texts) if i == self.no_threads - 1 else (i + 1) * chunk_size
-            text_chunk = texts[start_idx:end_idx]
-            thread = threading.Thread(target=_detect, args=(start_idx, end_idx, text_chunk))
-            threads.append(thread)
-            thread.start()
-
-        for thread in threads:
-            thread.join()
-
+        for i, text in enumerate(texts):
+            results[i] = {
+                "entropy": self.entropy.compute_entropy(text),
+                "logp": self.logp.compute_log_p(text),
+                "logrank": self.logrank.compute_logrank(text),
+                "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
+                "rank": self.rank.compute_rank(text),
+                "diversity": self.diversity.compute_features(text)
+            }
+        
         del self.gpt2_tokenizer
         del self.gpt2_model
         gc.collect()
         torch.cuda.empty_cache()
         print("[LOGS] GPT2 Completed")
 
-        return []
+        return results
     
     def detect_roberta(self, text):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
@@ -199,6 +181,30 @@ class Baselines:
         features.update(self.detect_others(text))
 
         return features
+    
+    def log_results(self, results, output_path="results.json"):
+        # Convert all NumPy data types to native Python types
+        def convert(o):
+            if isinstance(o, np.ndarray):
+                return o.tolist()
+            elif isinstance(o, (np.float32, np.float64)):
+                return float(o)
+            elif isinstance(o, (np.int32, np.int64)):
+                return int(o)
+            elif isinstance(o, dict):
+                return {k: convert(v) for k, v in o.items()}
+            elif isinstance(o, list):
+                return [convert(i) for i in o]
+            else:
+                return o
+    
+        # Apply conversion and save as JSON
+        cleaned_results = [convert(item) for item in results]
+    
+        with open(output_path, "w") as f:
+            json.dump(cleaned_results, f, indent=2)
+    
+        print(f"[LOGS] Results saved to {output_path}")
 
     
 # Example testing
@@ -210,7 +216,7 @@ baselines = Baselines()
 
 # print(baselines.detect(sample_text))
 train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-texts = train_df["generation"][:5000].tolist()
+texts = train_df["generation"][:200].tolist()
 
-features = baselines.detect_gpt2(texts)
+baselines.log_results(baselines.detect_gpt2(texts), "gpt2_results.json")
 # print(len(features))
