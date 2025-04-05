@@ -44,20 +44,6 @@ class Baselines:
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
         self.no_threads = 12
     
-    def sanitize(self, obj):
-        if isinstance(obj, dict):
-            return {k: self.sanitize(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [self.sanitize(i) for i in obj]
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, (np.float32, np.float64, np.int32, np.int64)):
-            return obj.item()
-        elif isinstance(obj, torch.Tensor):
-            return obj.detach().cpu().tolist()  # handles both scalars and tensors
-        else:
-            return obj
-    
     def detect_gpt2(self, texts):
         self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
         self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
