@@ -209,8 +209,8 @@ baselines = Baselines()
 # """
 
 # print(baselines.detect(sample_text))
-# train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-# texts = train_df["generation"][:5000].tolist()
+train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
+texts = train_df["generation"][:5000].tolist()
 
 # features = baselines.detect_gpt2(texts)
 # print(len(features))
