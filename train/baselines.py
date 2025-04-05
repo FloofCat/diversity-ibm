@@ -3,7 +3,7 @@ import gc
 import json
 import pandas as pd
 import numpy as np
-import multiprocessing as mp
+from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
 from diversity import Diversity
 from entropy import Entropy
@@ -57,7 +57,7 @@ class Baselines:
         
         results = [None] * len(texts)
         
-        for i, text in enumerate(texts):
+        for i, text in enumerate(tqdm(texts)):
             results[i] = {
                 "entropy": self.entropy.compute_entropy(text),
                 "logp": self.logp.compute_log_p(text),
@@ -216,7 +216,6 @@ baselines = Baselines()
 
 # print(baselines.detect(sample_text))
 train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-texts = train_df["generation"][:200].tolist()
+texts = train_df["generation"].tolist()
 
 baselines.log_results(baselines.detect_gpt2(texts), "gpt2_results.json")
-# print(len(features))
