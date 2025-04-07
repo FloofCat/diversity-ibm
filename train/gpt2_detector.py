@@ -1,12 +1,12 @@
 import torch
 import gc
 import numpy as np
-from .baseline_models.diversity import Diversity
-from .baseline_models.entropy import Entropy
-from .baseline_models.logp import LogP
-from .baseline_models.logrank import LogRank
-from .baseline_models.lrr_npr import DetectLLM
-from .baseline_models.rank import Rank
+from train.baseline_models.diversity import Diversity
+from train.baseline_models.entropy import Entropy
+from train.baseline_models.logp import LogP
+from train.baseline_models.logrank import LogRank
+from train.baseline_models.lrr_npr import DetectLLM
+from train.baseline_models.rank import Rank
 
 class GPT2Worker:
     def __init__(self, model_path):
