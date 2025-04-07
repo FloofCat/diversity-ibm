@@ -5,20 +5,8 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
-from diversity import Diversity
-from entropy import Entropy
-from fastdetect import FastDetect
-from logp import LogP
-from logrank import LogRank
-from lrr_npr import DetectLLM
-from rank import Rank
-from roberta import RobertaBase
-from radar import RADAR
-from binoculars import Binoculars
-from raidar import RAIDAR
-from t5sentinel import T5Predictor
-from biscope import BiScope
-from downloader import Downloader
+import multiprocessing as mp
+from gpt2_detector import GPT2Worker
 
 lim1 = 0
 lim2 = 25000
@@ -45,6 +33,10 @@ class Baselines:
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
+        self.num_workers = 12
+
+        if not ray.is_initialized():
+            ray.init()
 
     def log_results(self, results, output_path="results.json"):
         # Convert all NumPy data types to native Python types
@@ -69,42 +61,10 @@ class Baselines:
             json.dump(cleaned_results, f, indent=2)
     
         print(f"[LOGS] Results saved to {output_path}")
-    
-    def detect_gpt2(self, texts):
-        self.gpt2_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/gpt2", use_fast=False, trust_remote_code=True)
-        self.gpt2_model = self.types["gpt2"].from_pretrained(f"{self.cache_dir}/gpt2", device_map='auto', trust_remote_code=True)
-        print("[LOGS] Loaded GPT2 model.")
-
-        self.entropy = Entropy(self.gpt2_model, self.gpt2_tokenizer)
-        self.logp = LogP(self.gpt2_model, self.gpt2_tokenizer)
-        self.logrank = LogRank(self.gpt2_model, self.gpt2_tokenizer)
-        self.detectllm = DetectLLM(self.gpt2_model, self.gpt2_tokenizer)
-        self.rank = Rank(self.gpt2_model, self.gpt2_tokenizer)
-        self.diversity = Diversity(self.gpt2_model, self.gpt2_tokenizer)
         
-        results = [None] * len(texts)
-        
-        for i, text in enumerate(tqdm(texts)):
-            results[i] = {
-                "entropy": self.entropy.compute_entropy(text),
-                "logp": self.logp.compute_log_p(text),
-                "logrank": self.logrank.compute_logrank(text),
-                "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
-                "rank": self.rank.compute_rank(text),
-                "diversity": self.diversity.compute_features(text)
-            }
-        
-        del self.gpt2_tokenizer
-        del self.gpt2_model
-        gc.collect()
-        torch.cuda.empty_cache()
-        print("[LOGS] GPT2 Completed")
-
-        return results
-    
     def detect_roberta(self, texts):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
-        self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', trust_remote_code=True)
+        self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] Roberta Loaded")
         self.roberta = RobertaBase(self.roberta_model, self.roberta_tokenizer)
 
@@ -125,7 +85,7 @@ class Baselines:
 
     def detect_radar(self, texts):
         self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
-        self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', trust_remote_code=True)
+        self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] RADAR Loaded")
 
         results = [None] * len(texts)
@@ -147,8 +107,8 @@ class Baselines:
 
     def detect_binoculars_biscope(self, texts):
         self.binoculars_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/binoculars_observer", use_fast=False, trust_remote_code=True)
-        self.binoculars_observer_model = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", device_map='auto', trust_remote_code=True)
-        self.binoculars_performer_model = self.types["binoculars_performer"].from_pretrained(f"{self.cache_dir}/binoculars_performer", device_map='auto', trust_remote_code=True)
+        self.binoculars_observer_model = self.types["binoculars_observer"].from_pretrained(f"{self.cache_dir}/binoculars_observer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
+        self.binoculars_performer_model = self.types["binoculars_performer"].from_pretrained(f"{self.cache_dir}/binoculars_performer", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] Binoculars Loaded")
 
         self.binoculars = Binoculars(self.binoculars_observer_model, self.binoculars_performer_model, self.binoculars_tokenizer)
@@ -173,7 +133,7 @@ class Baselines:
     
     def detect_raidar(self, texts):
         self.raidar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/raidar", use_fast=False, trust_remote_code=True)
-        self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', trust_remote_code=True)
+        self.raidar_model = self.types["raidar"].from_pretrained(f"{self.cache_dir}/raidar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
         print("[LOGS] RAIDAR Loaded")
 
         self.raidar = RAIDAR(self.raidar_model, self.raidar_tokenizer)
@@ -226,4 +186,22 @@ baselines = Baselines()
 
 train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
 texts = train_df["generation"][lim1:lim2].tolist()
-baselines.log_results(baselines.detect_gpt2(texts), f"gpt2_results-{lim1}-{lim2}.json")
+
+worker = None
+
+def init_worker(model_path):
+    global worker
+    worker = GPT2Worker(model_path)
+
+def process_text(text):
+    global worker
+    return worker.infer(text)
+
+def parallel_infer(texts, model_path, num_workers=25):
+    ctx = mp.get_context("spawn")  # Important when using CUDA
+    with ctx.Pool(processes=num_workers, initializer=init_worker, initargs=(model_path,)) as pool:
+        results = pool.map(process_text, texts)
+    return results
+
+results = parallel_infer(texts, "./model-cache/gpt2")
+baselines.log_results(results, "gpt2_infer.json")
