@@ -198,9 +198,9 @@ def process_text(text):
     return worker.infer(text)
 
 def parallel_infer(texts, model_path, num_workers=25):
-    ctx = mp.get_context("spawn")  # Important when using CUDA
+    ctx = mp.get_context("spawn")
     with ctx.Pool(processes=num_workers, initializer=init_worker, initargs=(model_path,)) as pool:
-        results = pool.map(process_text, texts)
+        results = list(tqdm(pool.imap_unordered(process_text, texts), total=len(texts)))
     return results
 
 results = parallel_infer(texts, "./model-cache/gpt2")
