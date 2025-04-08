@@ -178,12 +178,6 @@ class Baselines:
 
     
 # Example testing
-print("What is happening? Has this docker image actually imported yet?")
-baselines = Baselines()
-
-train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-texts = train_df["generation"][lim1:lim2].tolist()
-
 worker = None
 
 def init_worker(model_path):
@@ -200,5 +194,12 @@ def parallel_infer(texts, model_path, num_workers=25):
         results = list(tqdm(pool.imap_unordered(process_text, texts), total=len(texts)))
     return results
 
-results = parallel_infer(texts, "./model-cache/gpt2")
-baselines.log_results(results, "gpt2_infer.json")
+if __name__ == "__main__":
+    print("What is happening? Has this docker image actually imported yet?")
+    baselines = Baselines()
+
+    train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
+    texts = train_df["generation"][lim1:lim2].tolist()
+
+    results = parallel_infer(texts, "./model-cache/gpt2")
+    baselines.log_results(results, "gpt2_infer.json")
