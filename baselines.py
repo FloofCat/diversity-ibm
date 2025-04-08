@@ -15,22 +15,22 @@ lim2 = 25000
 class Baselines:
     def __init__(self):
         # Download models if not already downloaded
-        self.cache_dir = "./model-cache"
+        self.cache_dir = "../model-cache"
         self.models = {
             "gpt2": "gpt2",
-            "roberta": "openai-community/roberta-base-openai-detector",
-            "radar": "TrustSafeAI/RADAR-Vicuna-7B",
-            "binoculars_observer": "tiiuae/falcon-7b",
-            "binoculars_performer": "tiiuae/falcon-7b-instruct",
-            "raidar": "tiiuae/falcon-7b-instruct"
+            # "roberta": "openai-community/roberta-base-openai-detector",
+            # "radar": "TrustSafeAI/RADAR-Vicuna-7B",
+            # "binoculars_observer": "tiiuae/falcon-7b",
+            # "binoculars_performer": "tiiuae/falcon-7b-instruct",
+            # "raidar": "tiiuae/falcon-7b-instruct"
         }
         self.types = {
             "gpt2": AutoModelForCausalLM,
-            "roberta": AutoModelForSequenceClassification,
-            "radar": AutoModelForSequenceClassification,
-            "binoculars_observer": AutoModelForCausalLM,
-            "binoculars_performer": AutoModelForCausalLM,
-            "raidar": AutoModelForCausalLM
+            # "roberta": AutoModelForSequenceClassification,
+            # "radar": AutoModelForSequenceClassification,
+            # "binoculars_observer": AutoModelForCausalLM,
+            # "binoculars_performer": AutoModelForCausalLM,
+            # "raidar": AutoModelForCausalLM
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
