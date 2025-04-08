@@ -53,5 +53,7 @@ class DetectLLM:
             _, perturbed_ranks = self.compute_log_probs_ranks(perturbed_text)
             perturbed_log_ranks.append(torch.sum(torch.log(torch.tensor(perturbed_ranks, dtype=torch.float32))).item())
         
+        if log_rank_original == 0:
+            return 0
         NPR = sum(perturbed_log_ranks) / (n * log_rank_original)
         return NPR
