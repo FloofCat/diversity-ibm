@@ -49,7 +49,7 @@ class DetectLLM:
         for _ in range(n):
             perturbed_text = self.perturbation_func(text)
             _, perturbed_ranks = self.compute_log_probs_ranks(perturbed_text)
-            perturbed_log_ranks.append(sum(torch.log(torch.tensor(perturbed_ranks, dtype=torch.float32))).item())
+            perturbed_log_ranks.append(torch.sum(torch.log(torch.tensor(perturbed_ranks, dtype=torch.float32))).item())
         
         NPR = sum(perturbed_log_ranks) / (n * log_rank_original)
         return NPR
