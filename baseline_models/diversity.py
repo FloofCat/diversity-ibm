@@ -18,7 +18,7 @@ class Diversity:
         self.features = []
         
     def compute_log_likelihoods(self, text):
-        tokens = self.tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=1024)
+        tokens = self.tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=1024).to(self.model.device)
         with torch.no_grad():
             outputs = self.model(tokens, labels=tokens)
         logits = outputs.logits
