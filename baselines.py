@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
 import multiprocessing as mp
+from baseline_models.downloader import Downloader
 from gpt2_detector import GPT2Worker
 
 lim1 = 0
