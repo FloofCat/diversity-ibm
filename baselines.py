@@ -34,10 +34,6 @@ class Baselines:
         }
 
         self.downloader = Downloader(self.models, self.types, self.cache_dir)
-        self.num_workers = 12
-
-        if not ray.is_initialized():
-            ray.init()
 
     def log_results(self, results, output_path="results.json"):
         # Convert all NumPy data types to native Python types
