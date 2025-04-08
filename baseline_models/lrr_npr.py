@@ -45,7 +45,7 @@ class DetectLLM:
         
     def compute_NPR(self, text, n=5):
         token_log_probs, ranks = self.compute_log_probs_ranks(text)
-        log_rank_original = sum(torch.log(torch.tensor(ranks, dtype=torch.float32))).item()
+        log_rank_original = torch.sum(torch.log(torch.tensor(ranks, dtype=torch.float32))).item()
             
         perturbed_log_ranks = []
         for _ in range(n):
