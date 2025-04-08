@@ -12,7 +12,7 @@ class Downloader:
 
         # login(token="XXXXXXXXXXXXXXXXXX")
         self.download_models()
-        self.download_raid()
+        # self.download_raid()
     
     def download_raid(self):
         raid_downloads = {
