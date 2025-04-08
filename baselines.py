@@ -174,6 +174,6 @@ if __name__ == "__main__":
     gpt2_worker = GPT2Worker("./model-cache/gpt2")
     
     train_df = pd.read_csv("./model-cache/raid/train.csv")
-    texts = train_df["text"][lim1:lim2].tolist()
+    texts = train_df["generation"][lim1:lim2].tolist()
 
     baselines.log_results(gpt2_worker.infer_multiple(texts), "gpt2_results.json")
