@@ -1,6 +1,7 @@
 import torch
 import gc
 import numpy as np
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
 from baseline_models.diversity import Diversity
 from baseline_models.entropy import Entropy
 from baseline_models.logp import LogP
