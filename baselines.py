@@ -168,38 +168,12 @@ class Baselines:
 
         return results
 
-    def detect(self, texts):
-        not os.path.exists("gpt2_results.json") and baselines.log_results(baselines.detect_gpt2(texts), "gpt2_results.json")
-        not os.path.exists("roberta_results.json") and baselines.log_results(baselines.detect_roberta(texts), "roberta_results.json")
-        not os.path.exists("radar_results.json") and baselines.log_results(baselines.detect_radar(texts), "radar_results.json")
-        not os.path.exists("bi_results.json") and baselines.log_results(baselines.detect_binoculars_biscope(texts), "bi_results.json")
-        not os.path.exists("raidar_results.json") and baselines.log_results(baselines.detect_raidar(texts), "raidar_results.json")
-        not os.path.exists("other_results.json") and baselines.log_results(baselines.detect_others(texts), "other_results.json")
-
-    
-# Example testing
-worker = None
-
-def init_worker(model_path):
-    global worker
-    worker = GPT2Worker(model_path)
-
-def process_text(text):
-    global worker
-    return worker.infer(text)
-
-def parallel_infer(texts, model_path, num_workers=25):
-    ctx = mp.get_context("spawn")
-    with ctx.Pool(processes=num_workers, initializer=init_worker, initargs=(model_path,)) as pool:
-        results = list(tqdm(pool.imap_unordered(process_text, texts), total=len(texts)))
-    return results
-
 if __name__ == "__main__":
     print("What is happening? Has this docker image actually imported yet?")
     baselines = Baselines()
+    gpt2_worker = GPT2Worker("gpt2")
+    
+    train_df = pd.read_csv("cross_domains_cross_models.csv")
+    texts = train_df["text"][lim1:lim2].tolist()
 
-    train_df = pd.read_csv(baselines.cache_dir + "/raid/train.csv")
-    texts = train_df["generation"][lim1:lim2].tolist()
-
-    results = parallel_infer(texts, "./model-cache/gpt2")
-    baselines.log_results(results, "gpt2_infer.json")
+    baselines.log_results(gpt2_worker.infer_multiple(texts), "gpt2_results.json")
