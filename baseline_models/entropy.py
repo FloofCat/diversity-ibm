@@ -16,6 +16,7 @@ class Entropy:
         token_log_probs = [log_probs[0, i, token].item() for i, token in enumerate(tokens[0][1:])]
             
         probs = [torch.exp(torch.tensor(log_prob)) for log_prob in token_log_probs]
+        if len(probs) == 0: return 0
         entropy = -sum([prob * torch.log(prob) for prob in probs]) / len(probs)
      
         return entropy.item()   
