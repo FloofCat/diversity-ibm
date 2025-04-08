@@ -173,7 +173,7 @@ if __name__ == "__main__":
     baselines = Baselines()
     gpt2_worker = GPT2Worker("gpt2")
     
-    train_df = pd.read_csv("../cross_domains_cross_models.csv")
+    train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     texts = train_df["text"][lim1:lim2].tolist()
 
     baselines.log_results(gpt2_worker.infer_multiple(texts), "gpt2_results.json")
