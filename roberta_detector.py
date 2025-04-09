@@ -21,7 +21,7 @@ class RobertaWorker:
     
     def infer_multiple(self, texts):
         results = [None] * len(texts)
-        for i, text in enumerate(texts):
+        for i, text in enumerate(tqdm(texts)):
             r = None
             try:
                 r = self.roberta.predict(text)
