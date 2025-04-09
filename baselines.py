@@ -8,6 +8,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Auto
 import multiprocessing as mp
 from baseline_models.downloader import Downloader
 from gpt2_detector import GPT2Worker
+from roberta_detector import RobertaWorker
 
 lim1 = 0
 lim2 = 25000
@@ -58,27 +59,6 @@ class Baselines:
             json.dump(cleaned_results, f, indent=2)
     
         print(f"[LOGS] Results saved to {output_path}")
-        
-    def detect_roberta(self, texts):
-        self.roberta_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/roberta", use_fast=False, trust_remote_code=True)
-        self.roberta_model = self.types["roberta"].from_pretrained(f"{self.cache_dir}/roberta", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
-        print("[LOGS] Roberta Loaded")
-        self.roberta = RobertaBase(self.roberta_model, self.roberta_tokenizer)
-
-        results = [None] * len(texts)
-
-        for i, text in enumerate(tqdm(texts)):
-            results[i] = {
-                "roberta": self.roberta.predict(text)
-            }
-
-        del self.roberta_tokenizer
-        del self.roberta_model
-        gc.collect()
-        torch.cuda.empty_cache() 
-        print("[LOGS] Roberta Completed")
-
-        return results
 
     def detect_radar(self, texts):
         self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
