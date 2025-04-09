@@ -38,17 +38,52 @@ class GPT2Worker:
         
     def infer_multiple(self, texts):
         results = [None] * len(texts)
-        
+    
         for i, text in enumerate(tqdm(texts)):
+            try:
+                entropy = self.entropy.compute_entropy(text)
+            except:
+                entropy = 0
+    
+            try:
+                logp = self.logp.compute_log_p(text)
+            except:
+                logp = 0
+    
+            try:
+                logrank = self.logrank.compute_logrank(text)
+            except:
+                logrank = 0
+    
+            try:
+                detectllm_LRR = self.detectllm.compute_LRR(text)
+            except:
+                detectllm_LRR = 0
+    
+            try:
+                detectllm_NPR = self.detectllm.compute_NPR(text)
+            except:
+                detectllm_NPR = 0
+    
+            try:
+                rank = self.rank.compute_rank(text)
+            except:
+                rank = 0
+    
+            try:
+                diversity = self.diversity.compute_features(text)
+            except:
+                diversity = 0
+    
             results[i] = {
-                "entropy": self.entropy.compute_entropy(text),
-                "logp": self.logp.compute_log_p(text),
-                "logrank": self.logrank.compute_logrank(text),
-                "detectllm": [self.detectllm.compute_LRR(text), self.detectllm.compute_NPR(text)],
-                "rank": self.rank.compute_rank(text),
-                "diversity": self.diversity.compute_features(text)
+                "entropy": entropy,
+                "logp": logp,
+                "logrank": logrank,
+                "detectllm": [detectllm_LRR, detectllm_NPR],
+                "rank": rank,
+                "diversity": diversity
             }
-            
+    
         return results
 
     def shutdown(self):
