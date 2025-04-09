@@ -38,7 +38,7 @@ class DetectLLM:
     def compute_LRR(self, text):
         token_log_probs, ranks = self.compute_log_probs_ranks(text)
         log_ranks = [torch.log(torch.tensor(rank, dtype=torch.float32)).item() for rank in ranks]
-        if(len(log_ranks) == 0):
+        if(len(log_ranks) == 0) or sum(log_ranks) == 0:
             return 0
         LRR = -sum(token_log_probs) / sum(log_ranks)
         return LRR
