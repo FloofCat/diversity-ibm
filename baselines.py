@@ -9,9 +9,10 @@ import multiprocessing as mp
 from baseline_models.downloader import Downloader
 from gpt2_detector import GPT2Worker
 from roberta_detector import RobertaWorker
+from radar_detector import RadarWorker
 
 lim1 = 0
-lim2 = 25000
+lim2 = 200000
 
 class Baselines:
     def __init__(self):
@@ -152,9 +153,10 @@ if __name__ == "__main__":
     print("What is happening? Has this docker image actually imported yet?")
     baselines = Baselines()
     # gpt2_worker = GPT2Worker("gpt2")
-    roberta_worker = RobertaWorker("openai-community/roberta-base-openai-detector")
+    # roberta_worker = RobertaWorker("openai-community/roberta-base-openai-detector")
+    radar_worker = RadarWorker("TrustSafeAI/RADAR-Vicuna-7B")
     
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     texts = train_df["text"][lim1:lim2].tolist()
 
-    baselines.log_results(roberta_worker.infer_multiple(texts), f"roberta_results_{lim1}-{lim2}.json")
+    baselines.log_results(radar_worker.infer_multiple(texts), f"radar_results_{lim1}-{lim2}.json")
