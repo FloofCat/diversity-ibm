@@ -24,13 +24,13 @@ class RaidarWorker:
         results = [None] * len(texts)
         for i, text in enumerate(tqdm(texts)):
             r = None
-            try:
-                r = self.raidar.compute_raidar(text)
-            except:
-                r = 0
+            # try:
+            #     r = self.raidar.compute_raidar(text)
+            # except:
+            #     r = 0
                 
             results[i] = {
-                "raidar": r
+                "raidar": self.raidar.compute_raidar(text)
             }
             
         return results
