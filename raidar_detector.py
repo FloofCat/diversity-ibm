@@ -2,22 +2,22 @@ import torch
 import numpy as np
 import gc
 from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from baseline_models.radar import RADAR
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from baseline_models.raidar import RAIDAR
 
-class RadarWorker:
+class RaidarWorker:
     def __init__(self, model_path):
         # Initialize once per actor
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False, trust_remote_code=True)
-        self.model = AutoModelForSequenceClassification.from_pretrained(
+        self.model = AutoModelForCausalLM.from_pretrained(
             model_path, device_map="cuda:0", torch_dtype=torch.float16, trust_remote_code=True
         )
         
-        self.radar = RADAR(self.model, self.tokenizer)
+        self.raidar = RAIDAR(self.model, self.tokenizer)
         
     def infer(self, text):
         return {
-            "radar": self.radar.detect_probability(text)
+            "raidar": self.raidar.compute_raidar(text)
         }
     
     def infer_multiple(self, texts):
@@ -25,12 +25,12 @@ class RadarWorker:
         for i, text in enumerate(tqdm(texts)):
             r = None
             try:
-                r = self.radar.detect_probability(text)
+                r = self.raidar.compute_raidar(text)
             except:
                 r = 0
                 
             results[i] = {
-                "radar": r
+                "raidar": r
             }
             
         return results
@@ -40,5 +40,3 @@ class RadarWorker:
         del self.model
         gc.collect()
         torch.cuda.empty_cache()
-    
-    

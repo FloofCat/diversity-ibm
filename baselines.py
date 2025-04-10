@@ -10,6 +10,7 @@ from baseline_models.downloader import Downloader
 from gpt2_detector import GPT2Worker
 from roberta_detector import RobertaWorker
 from radar_detector import RadarWorker
+from raidar_detector import RaidarWorker
 
 lim1 = 0
 lim2 = 200000
@@ -60,28 +61,6 @@ class Baselines:
             json.dump(cleaned_results, f, indent=2)
     
         print(f"[LOGS] Results saved to {output_path}")
-
-    def detect_radar(self, texts):
-        self.radar_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/radar", use_fast=False, trust_remote_code=True)
-        self.radar_model = self.types["radar"].from_pretrained(f"{self.cache_dir}/radar", device_map='auto', torch_dtype=torch.float16, trust_remote_code=True)
-        print("[LOGS] RADAR Loaded")
-
-        results = [None] * len(texts)
-
-        self.radar = RADAR(self.radar_model, self.radar_tokenizer)
-
-        for i, text in enumerate(tqdm(texts)):
-            results[i] = {
-                "radar": self.radar.detect_probability(text)
-            }
-
-        del self.radar_tokenizer
-        del self.radar_model
-        gc.collect()
-        torch.cuda.empty_cache() 
-        print("[LOGS] RADAR Completed")
-
-        return results
 
     def detect_binoculars_biscope(self, texts):
         self.binoculars_tokenizer = AutoTokenizer.from_pretrained(f"{self.cache_dir}/binoculars_observer", use_fast=False, trust_remote_code=True)
@@ -154,9 +133,10 @@ if __name__ == "__main__":
     baselines = Baselines()
     # gpt2_worker = GPT2Worker("gpt2")
     # roberta_worker = RobertaWorker("openai-community/roberta-base-openai-detector")
-    radar_worker = RadarWorker("TrustSafeAI/RADAR-Vicuna-7B")
+    # radar_worker = RadarWorker("TrustSafeAI/RADAR-Vicuna-7B")
+    raidar_worker = RaidarWorker("tiiuae/falcon-7b-instruct")
     
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     texts = train_df["text"][lim1:lim2].tolist()
 
-    baselines.log_results(radar_worker.infer_multiple(texts), f"radar_results_{lim1}-{lim2}.json")
+    baselines.log_results(raidar_worker.infer_multiple(texts), f"raidar_results_{lim1}-{lim2}.json")
