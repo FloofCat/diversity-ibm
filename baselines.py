@@ -11,6 +11,7 @@ from gpt2_detector import GPT2Worker
 from roberta_detector import RobertaWorker
 from radar_detector import RadarWorker
 from raidar_detector import RaidarWorker
+from other_detector import OtherWorker
 
 lim1 = 0
 lim2 = 200000
@@ -134,9 +135,10 @@ if __name__ == "__main__":
     # gpt2_worker = GPT2Worker("gpt2")
     # roberta_worker = RobertaWorker("openai-community/roberta-base-openai-detector")
     # radar_worker = RadarWorker("TrustSafeAI/RADAR-Vicuna-7B")
-    raidar_worker = RaidarWorker("tiiuae/falcon-7b-instruct")
+    # raidar_worker = RaidarWorker("tiiuae/falcon-7b-instruct")
+    other_worker = OtherWorker("../model-cache/T5Sentinel.0613.pt")
     
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     texts = train_df["text"][lim1:lim2].tolist()
 
-    baselines.log_results(raidar_worker.infer_multiple(texts), f"raidar_results_{lim1}-{lim2}.json")
+    baselines.log_results(other_worker.infer_multiple(texts), f"other_results_{lim1}-{lim2}.json")
