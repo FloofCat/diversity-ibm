@@ -3,7 +3,7 @@ import requests
 class FastDetect:
     def __init__(self):
         self.API_CODE = "sk-4d475457208fc256e2eace39dec34f17"
-        self.url = "http://region-9.autodl.pro:21504/api/detect"
+        self.url = "https://aidetect.lab.westlake.edu.cn/api/detect"
         self.headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + self.API_CODE
