@@ -146,5 +146,5 @@ if __name__ == "__main__":
     texts = train_df[lim1:lim2].tolist()
     
     # Shuffle
-    texts = random.shuffle(texts)
+    random.shuffle(texts)
     baselines.log_results(raidar_worker.infer_multiple(texts), f"raidar_results_{lim1}-{lim2}.json")
