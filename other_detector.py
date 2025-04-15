@@ -22,10 +22,16 @@ class OtherWorker:
         results = [None] * len(texts)
         for i, text in enumerate(tqdm(texts)):
             r = None
-            r = {
-                "fastdetect": self.fastdetect.detect(text),
-                "t5sentinel": self.t5sentinel.compute_t5(text)
-            }
+            try:
+                r = {
+                    "fastdetect": self.fastdetect.detect(text),
+                    "t5sentinel": self.t5sentinel.compute_t5(text)
+                }
+            except:
+                r = {
+                    "fastdetect": 0,
+                    "t5sentinel": 0
+                }
 
                 
             results[i] = r
