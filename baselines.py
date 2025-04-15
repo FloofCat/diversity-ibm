@@ -139,6 +139,8 @@ if __name__ == "__main__":
     other_worker = OtherWorker("../model-cache/T5Sentinel.0613.pt")
     
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
-    texts = train_df["text"][lim1:lim2].tolist()
-
+    
+    # Check the column "source_file" and if its test.csv
+    train_df = train_df[train_df["source_file"] == "test.csv"]["text"]
+    texts = train_df[lim1:lim2].tolist()
     baselines.log_results(other_worker.infer_multiple(texts), f"other_results_{lim1}-{lim2}.json")
