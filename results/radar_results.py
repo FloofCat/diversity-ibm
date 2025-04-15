@@ -31,7 +31,7 @@ def build_model_and_plot(X, y, X_test, y_test, feature):
     # Print classification report
     y_pred = model.predict(X_test)
     print(classification_report(y_test, y_pred))
-
+    
     # Accuracy per label
     labels = np.unique(y_test)
     for label in labels:
@@ -40,10 +40,10 @@ def build_model_and_plot(X, y, X_test, y_test, feature):
         print(f"Accuracy for label {label}: {label_acc}")
     
 # Read the dataset
-results_json = "gpt2_overall.json"
+results_json = "./jsons/radar_overall.json"
 dataset = "../../cross_domains_cross_models.csv"
-single_features = ["entropy", "logp", "logrank", "rank"]
-multi_features = ["detectllm", "diversity"]
+single_features = ["radar"]
+multi_features = []
 
 df = pd.read_csv(dataset)
 
@@ -54,37 +54,15 @@ with open(results_json, 'r') as file:
     Each result in results looks like this:
     {
     {
-        "entropy": ,
-        "logp": ,
-        "logrank": ,
-        "detectllm": [
-        ],
-        "rank": ,
-        "diversity": [
-        ],
-        "label": 0 or 1,
-        "text": ""
+        "roberta":
     }
-    """
-    # Filter valid entries instead of modifying the list during iteration
-    filtered_results = []
-    num = 0
-    
-    for result in results:
-        diversity = result.get("diversity")
-        if isinstance(diversity, list) and len(diversity) == 11:
-            filtered_results.append(result)
-        else:
-            num += 1
-    
-    print(f"Removed {num} results with invalid diversity")
-    
+    """    
     # Filter between train and test sets, check if r["text"] is in the df and if the same text in the df, its in train if the column "source_file" == "train.csv" or "eval.csv", test if "test.csv"
     results_train = []
     results_test = []
     
     index = 0
-    for result in filtered_results:
+    for result in results:
         # Look for column "source_file" for the index in df
         source_file = df.loc[index, "source_file"]
         if source_file == "train.csv" or source_file == "valid.csv":
