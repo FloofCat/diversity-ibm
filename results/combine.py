@@ -29,6 +29,9 @@ def log_results(results, output_path="results.json"):
     
 dataset = "cross_domains_cross_models.csv"
 df = pd.read_csv(dataset)
+# Get the "source_file" column and if test.csv then put df
+df = df[df["source_file"] == "test.csv"]
+df = df.reset_index(drop=True)
 results = [None] * len(df)
 # Look for all .json in the current directory
 for filename in os.listdir("."):
