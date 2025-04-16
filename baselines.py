@@ -145,7 +145,6 @@ if __name__ == "__main__":
     # Ensure that there is 2500 label 0 samples, 2500 label 1 samples
     train_df_1 = train_df[train_df["label"] == 0].sample(2500)
     train_df_2 = train_df[train_df["label"] == 1].sample(2500)
-    train_df_1 = train_df_1.extend(train_df_2)
-    train_df_1 = train_df_1.sample(frac=1).reset_index(drop=True)
+    train_df_1 = pd.concat([train_df_1, train_df_2]).sample(frac=1, random_state=42).reset_index(drop=True)
     texts = train_df_1["text"]  
     baselines.log_results(raidar_worker.infer_multiple(texts), f"raidar_results_{lim1}-{lim2}.json")
