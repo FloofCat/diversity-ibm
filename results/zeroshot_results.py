@@ -7,7 +7,9 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, roc_curve, classification_report
 from sklearn.ensemble import RandomForestClassifier
+import sys
 
+PRIMARY_DATASET = sys.argv[1]
 def build_model_and_plot(X, y, X_test, y_test, feature):
     # Unbalanced, train balanced, RF 
     model = xgb.XGBClassifier(n_estimators=100, max_depth=10, random_state=42, scale_pos_weight=(len(y) - sum(y)) / sum(y))
@@ -40,12 +42,15 @@ def build_model_and_plot(X, y, X_test, y_test, feature):
         print(f"Accuracy for label {label}: {label_acc}")
     
 # Read the dataset
-results_json = "gpt2_overall.json"
-dataset = "../../cross_domains_cross_models.csv"
+results_json = "../cross_domains_cross_models/jsons/gpt2_overall.json"
 single_features = ["entropy", "logp", "logrank", "rank"]
 multi_features = ["detectllm", "diversity"]
 
-df = pd.read_csv(dataset)
+
+df = pd.read_csv(PRIMARY_DATASET)
+dict_df = {}
+for i, row in df.iterrows():
+    dict_df[row["text"]] = i
 
 with open(results_json, 'r') as file:
     results = json.load(file)
@@ -82,16 +87,21 @@ with open(results_json, 'r') as file:
     # Filter between train and test sets, check if r["text"] is in the df and if the same text in the df, its in train if the column "source_file" == "train.csv" or "eval.csv", test if "test.csv"
     results_train = []
     results_test = []
+    results_test_ood = []
     
-    index = 0
     for result in filtered_results:
         # Look for column "source_file" for the index in df
+        try:
+            index = dict_df[result["text"]]
+        except:
+            continue
         source_file = df.loc[index, "source_file"]
         if source_file == "train.csv" or source_file == "valid.csv":
             results_train.append(result)
         elif source_file == "test.csv":
             results_test.append(result)
-        index += 1
+        elif source_file == "test_ood.csv":
+            results_test_ood.append(result)
     
     
     # Check number of samples with label 0 and 1 in train and test sets
@@ -103,6 +113,10 @@ with open(results_json, 'r') as file:
     print(f"Number of samples with label 1 in train set: {num_samples_label_1_train}")
     print(f"Number of samples with label 0 in test set: {num_samples_label_0_test}")
     print(f"Number of samples with label 1 in test set: {num_samples_label_1_test}")
+    num_samples_label_0_test_ood = sum([r["label"] == 0 for r in results_test_ood])
+    num_samples_label_1_test_ood = sum([r["label"] == 1 for r in results_test_ood])
+    print(f"Number of samples with label 0 in test_ood set: {num_samples_label_0_test_ood}")
+    print(f"Number of samples with label 1 in test_ood set: {num_samples_label_1_test_ood}")
 
     filtered_results = results_train
     # Train with different features
@@ -117,7 +131,14 @@ with open(results_json, 'r') as file:
         X_test = np.array(X_test).reshape(-1, 1)
         y_test = [r["label"] for r in results_test]
         y_test = np.array(y_test)
+        
+        X_test_ood = [r[feature] for r in results_test_ood]
+        X_test_ood = np.array(X_test_ood).reshape(-1, 1)
+        y_test_ood = [r["label"] for r in results_test_ood]
+        y_test_ood = np.array(y_test_ood)
+        
         build_model_and_plot(X, y, X_test, y_test, feature)
+        build_model_and_plot(X, y, X_test_ood, y_test_ood, feature)
         print("-------------------------------------")
     
     for feature in multi_features:
@@ -127,5 +148,10 @@ with open(results_json, 'r') as file:
         
         X_test = np.array([r[feature] for r in results_test])
         y_test = np.array([r["label"] for r in results_test])
+        
+        X_test_ood = np.array([r[feature] for r in results_test_ood])
+        y_test_ood = np.array([r["label"] for r in results_test_ood])
+        
         build_model_and_plot(X, y, X_test, y_test, feature)
+        build_model_and_plot(X, y, X_test_ood, y_test_ood, feature)
         print("-------------------------------------")

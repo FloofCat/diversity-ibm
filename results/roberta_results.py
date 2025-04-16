@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, roc_curve, classification_report
 from sklearn.ensemble import RandomForestClassifier
+import sys
 
 def build_model_and_plot(X, y, X_test, y_test, feature):
     # Unbalanced, train balanced, RF 
@@ -40,13 +41,16 @@ def build_model_and_plot(X, y, X_test, y_test, feature):
         print(f"Accuracy for label {label}: {label_acc}")
     
 # Read the dataset
-results_json = "roberta_overall.json"
-dataset = "../../cross_domains_cross_models.csv"
+results_json = "../cross_domains_cross_models/jsons/roberta_overall.json"
+dataset = sys.argv[1]
 single_features = ["roberta"]
 multi_features = []
 
 df = pd.read_csv(dataset)
-
+dict_df = {}
+for i, row in df.iterrows():
+    dict_df[row["text"]] = i
+    
 with open(results_json, 'r') as file:
     results = json.load(file)
     
@@ -60,16 +64,21 @@ with open(results_json, 'r') as file:
     # Filter between train and test sets, check if r["text"] is in the df and if the same text in the df, its in train if the column "source_file" == "train.csv" or "eval.csv", test if "test.csv"
     results_train = []
     results_test = []
+    results_test_ood = []
     
-    index = 0
     for result in results:
         # Look for column "source_file" for the index in df
+        try:
+            index = dict_df[result["text"]]
+        except:
+            continue
         source_file = df.loc[index, "source_file"]
         if source_file == "train.csv" or source_file == "valid.csv":
             results_train.append(result)
         elif source_file == "test.csv":
             results_test.append(result)
-        index += 1
+        elif source_file == "test_ood.csv":
+            results_test_ood.append(result)
     
     
     # Check number of samples with label 0 and 1 in train and test sets

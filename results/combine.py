@@ -43,4 +43,4 @@ for filename in os.listdir("."):
                 results[idx] = data_point
                 idx += 1
 
-log_results(results, "roberta_overall.json")
+log_results(results, "raidar_overall.json")
