@@ -135,12 +135,17 @@ if __name__ == "__main__":
     # gpt2_worker = GPT2Worker("gpt2")
     # roberta_worker = RobertaWorker("openai-community/roberta-base-openai-detector")
     # radar_worker = RadarWorker("TrustSafeAI/RADAR-Vicuna-7B")
-    # raidar_worker = RaidarWorker("tiiuae/falcon-7b-instruct")
-    other_worker = OtherWorker("../model-cache/T5Sentinel.0613.pt")
+    raidar_worker = RaidarWorker("tiiuae/falcon-7b-instruct")
+    # other_worker = OtherWorker("../model-cache/T5Sentinel.0613.pt")
     
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     
     # Check the column "source_file" and if its test.csv
     train_df = train_df[train_df["source_file"] == "test.csv"]["text"]
-    texts = train_df[lim1:lim2]
-    baselines.log_results(other_worker.infer_multiple(texts), f"other_results_{lim1}-{lim2}.json")
+    # Ensure that there is 2500 label 0 samples, 2500 label 1 samples
+    train_df_1 = train_df[train_df["label"] == 0].sample(2500)
+    train_df_2 = train_df[train_df["label"] == 1].sample(2500)
+    train_df_1 = train_df_1.append(train_df_2)
+    train_df_1 = train_df_1.sample(frac=1).reset_index(drop=True)
+    texts = train_df_1  
+    baselines.log_results(raidar_worker.infer_multiple(texts), f"raidar_results_{lim1}-{lim2}.json")
