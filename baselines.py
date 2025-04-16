@@ -141,11 +141,11 @@ if __name__ == "__main__":
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     
     # Check the column "source_file" and if its test.csv
-    train_df = train_df[train_df["source_file"] == "test.csv"]["text"]
+    train_df = train_df[train_df["source_file"] == "test.csv"]
     # Ensure that there is 2500 label 0 samples, 2500 label 1 samples
     train_df_1 = train_df[train_df["label"] == 0].sample(2500)
     train_df_2 = train_df[train_df["label"] == 1].sample(2500)
     train_df_1 = train_df_1.append(train_df_2)
     train_df_1 = train_df_1.sample(frac=1).reset_index(drop=True)
-    texts = train_df_1  
+    texts = train_df_1["text"]  
     baselines.log_results(raidar_worker.infer_multiple(texts), f"raidar_results_{lim1}-{lim2}.json")
