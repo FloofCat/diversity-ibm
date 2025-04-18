@@ -65,9 +65,12 @@ with open(results_json, 'r') as file:
     results_filtered = []
     
     # index = 0
+    i = 0
     for result in results:
         if result["text"] in dict_df:
             results_filtered.append(result)
+            i += 1
+            print(f"Number of samples filtered: {i}")
     
     # Split into train and test sets
     results_train, results_test = train_test_split(results_filtered, test_size=0.4, random_state=42)

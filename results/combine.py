@@ -32,18 +32,37 @@ df = pd.read_csv(dataset)
 # Get the "source_file" column and if test.csv then put df
 df = df[df["source_file"] == "test.csv"]
 df = df.reset_index(drop=True)
-results = [None] * len(df)
+df_label1 = df[df["label"] == 1].head(2500)
+df_label0 = df[df["label"] == 0].head(2500)
+df_json1 = pd.concat([df_label0, df_label1]).sample(frac=1, random_state=42).reset_index(drop=True)
+
+print(df_json1.head())
+
+df_label1_2 = df[df["label"] == 1].head(5000)[2500:]
+df_label0_2 = df[df["label"] == 0].head(5000)[2500:]
+df_json2 = pd.concat([df_label0_2, df_label1_2]).sample(frac=1, random_state=42).reset_index(drop=True)
+print(df_json2.head())
+
+results = [None] * 10000
 # Look for all .json in the current directory
 for filename in os.listdir("."):
     if filename.endswith(".json"):
         with open(filename, "r") as f:
             data = json.load(f)
-            idx = filename.split("/")[-1].split("_")[-1].split("-")[0]
-            idx = int(idx)
+            idx = 0
+            if "json1" in filename:
+                df = df_json1
+                results_idx = 0
+            elif "json2" in filename:
+                df = df_json2
+                results_idx = 5000
+            print(df.head())
             for data_point in data:
                 data_point["text"] = df.loc[idx, "text"]
                 data_point["label"] = df.loc[idx, "label"]
-                results[idx] = data_point
+                results[results_idx] = data_point
+                results_idx += 1
                 idx += 1
+            print(f"Reached {idx} for this file {filename}")
 
 log_results(results, "raidar_overall.json")

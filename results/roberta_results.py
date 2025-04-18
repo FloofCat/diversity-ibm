@@ -90,6 +90,10 @@ with open(results_json, 'r') as file:
     print(f"Number of samples with label 1 in train set: {num_samples_label_1_train}")
     print(f"Number of samples with label 0 in test set: {num_samples_label_0_test}")
     print(f"Number of samples with label 1 in test set: {num_samples_label_1_test}")
+    num_samples_label_0_test_ood = sum([r["label"] == 0 for r in results_test_ood])
+    num_samples_label_1_test_ood = sum([r["label"] == 1 for r in results_test_ood])
+    print(f"Number of samples with label 0 in test_ood set: {num_samples_label_0_test_ood}")
+    print(f"Number of samples with label 1 in test_ood set: {num_samples_label_1_test_ood}")
 
     filtered_results = results_train
     # Train with different features
@@ -104,7 +108,14 @@ with open(results_json, 'r') as file:
         X_test = np.array(X_test).reshape(-1, 1)
         y_test = [r["label"] for r in results_test]
         y_test = np.array(y_test)
+        
+        X_test_ood = [r[feature] for r in results_test_ood]
+        X_test_ood = np.array(X_test_ood).reshape(-1, 1)
+        y_test_ood = [r["label"] for r in results_test_ood]
+        y_test_ood = np.array(y_test_ood)
+        
         build_model_and_plot(X, y, X_test, y_test, feature)
+        build_model_and_plot(X, y, X_test_ood, y_test_ood, feature)
         print("-------------------------------------")
     
     for feature in multi_features:
@@ -114,5 +125,10 @@ with open(results_json, 'r') as file:
         
         X_test = np.array([r[feature] for r in results_test])
         y_test = np.array([r["label"] for r in results_test])
+        
+        X_test_ood = np.array([r[feature] for r in results_test_ood])
+        y_test_ood = np.array([r["label"] for r in results_test_ood])
+        
         build_model_and_plot(X, y, X_test, y_test, feature)
+        build_model_and_plot(X, y, X_test_ood, y_test_ood, feature)
         print("-------------------------------------")

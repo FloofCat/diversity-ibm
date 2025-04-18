@@ -2,6 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
+from pandas.core.arrays import numpy_
 import xgboost as xgb
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -65,7 +66,7 @@ with open(results_json, 'r') as file:
     # Filter between train and test sets, check if r["text"] is in the df and if the same text in the df, its in train if the column "source_file" == "train.csv" or "eval.csv", test if "test.csv"
     results_train = []
     results_test = []
-    # results_test_ood = []
+    results_test_ood = []
     
     for result in results:
         # Look for column "source_file" for the index in df
@@ -78,8 +79,8 @@ with open(results_json, 'r') as file:
             results_train.append(result)
         elif source_file == "test.csv":
             results_test.append(result)
-        # elif source_file == "test_ood.csv":
-        #     results_test_ood.append(result)
+        elif source_file == "test_ood.csv":
+            results_test_ood.append(result)
     
     # Remove 80% of test, move to test
     # Shuffle train and test
@@ -97,6 +98,10 @@ with open(results_json, 'r') as file:
     print(f"Number of samples with label 1 in train set: {num_samples_label_1_train}")
     print(f"Number of samples with label 0 in test set: {num_samples_label_0_test}")
     print(f"Number of samples with label 1 in test set: {num_samples_label_1_test}")
+    num_samples_label_0_test_ood = sum([r["label"] == 0 for r in results_test_ood])
+    num_samples_label_1_test_ood = sum([r["label"] == 1 for r in results_test_ood])
+    print(f"Number of samples with label 0 in test set (OOD): {num_samples_label_0_test_ood}")
+    print(f"Number of samples with label 1 in test set (OOD): {num_samples_label_1_test_ood}")
 
     filtered_results = results_train
     # Train with different features
@@ -111,7 +116,14 @@ with open(results_json, 'r') as file:
         X_test = np.array(X_test).reshape(-1, 1)
         y_test = [r["label"] for r in results_test]
         y_test = np.array(y_test)
+        
+        X_test_ood = [r[feature] for r in results_test_ood]
+        X_test_ood = np.array(X_test_ood).reshape(-1, 1)
+        y_test_ood = [r["label"] for r in results_test_ood]
+        y_test_ood = np.array(y_test_ood)
+        
         build_model_and_plot(X, y, X_test, y_test, feature)
+        build_model_and_plot(X, y, X_test_ood, y_test_ood, feature)
         print("-------------------------------------")
     
     for feature in multi_features:
@@ -121,5 +133,10 @@ with open(results_json, 'r') as file:
         
         X_test = np.array([r[feature] for r in results_test])
         y_test = np.array([r["label"] for r in results_test])
+        
+        X_test_ood = np.array([r[feature] for r in results_test_ood])
+        y_test_ood = np.array([r["label"] for r in results_test_ood])
+        
         build_model_and_plot(X, y, X_test, y_test, feature)
+        build_model_and_plot(X, y, X_test_ood, y_test_ood, feature)
         print("-------------------------------------")
