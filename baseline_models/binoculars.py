@@ -31,6 +31,7 @@ class Binoculars:
         return perplexity.item()
     
     def _cross_perplexity(self, observer_logits, performer_logits, tokens):
+        tokens = tokens.cuda()
         observer_log_probs = torch.log_softmax(observer_logits.float(), dim=-1).cuda()
         b1 = observer_log_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]]
         tokens = tokens.to(self.performer_model.device)
