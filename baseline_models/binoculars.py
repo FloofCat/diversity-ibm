@@ -24,7 +24,7 @@ class Binoculars:
         return binoculars_score
     
     def _perplexity(self, tokens, logits):
-        tokens = tokens.to(self.performer_model.device)
+        tokens = tokens.cuda()
         log_probs = torch.log_softmax(logits.float(), dim=-1).cuda()
         token_log_probs = log_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]]
         perplexity = torch.exp(-torch.mean(token_log_probs))
