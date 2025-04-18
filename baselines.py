@@ -144,8 +144,5 @@ if __name__ == "__main__":
     # Check the column "source_file" and if its test.csv
     train_df = train_df[train_df["source_file"] == "test.csv"]
     # Ensure that there is 2500 label 0 samples, 2500 label 1 samples
-    train_df_1 = train_df[train_df["label"] == 0].head(2500)
-    train_df_2 = train_df[train_df["label"] == 1].head(2500)
-    train_df_1 = pd.concat([train_df_1, train_df_2]).sample(frac=1, random_state=42).reset_index(drop=True)
-    texts = train_df_1["text"]  
+    texts = train_df["text"]  
     baselines.log_results(bi_worker.infer_multiple(texts), f"bi_results_{lim1}-{lim2}.json")
