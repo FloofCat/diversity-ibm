@@ -14,6 +14,7 @@ class Binoculars:
         tokens = self.tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=512).to(self.observer_model.device)
         with torch.no_grad():
             observer_logits = self.observer_model(tokens).logits
+            tokens = tokens.to(self.performer_model.device)
             performer_logits = self.performer_model(tokens).logits
         
         ppl = self._perplexity(tokens, performer_logits)
