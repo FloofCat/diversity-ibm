@@ -32,8 +32,10 @@ class Binoculars:
     
     def _cross_perplexity(self, observer_logits, performer_logits, tokens):
         observer_log_probs = torch.log_softmax(observer_logits.float(), dim=-1).cuda()
+        b1 = observer_log_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]]
+        tokens = tokens.to(self.performer_model.device)
         performer_probs = torch.softmax(performer_logits.float(), dim=-1).cuda()
-        cross_entropy = -torch.sum(performer_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]] * 
-                                   observer_log_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]])
+        b2 = performer_probs[0, torch.arange(len(tokens[0]) - 1), tokens[0, 1:]]
+        cross_entropy = -torch.sum(b1 * b2)
         cross_entropy /= len(tokens[0]) - 1  # Normalize
         return torch.exp(cross_entropy).item()
