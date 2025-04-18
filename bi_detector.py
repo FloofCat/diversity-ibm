@@ -4,7 +4,7 @@ import gc
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from baseline_models.binoculars import Binoculars
-from baseline_models.biscope import BiScope
+# from baseline_models.biscope import BiScope
 
 class BiWorker:
     def __init__(self, model_path, model_path2):
@@ -18,12 +18,12 @@ class BiWorker:
         )
         
         self.binoculars = Binoculars(self.binoculars_model, self.binoculars_performer, self.binoculars_tokenizer)
-        self.biscope = BiScope(self.binoculars_performer, self.binoculars_tokenizer, self.binoculars_performer, self.binoculars_tokenizer)
+        # self.biscope = BiScope(self.binoculars_performer, self.binoculars_tokenizer, self.binoculars_performer, self.binoculars_tokenizer)
 
     def infer(self, text):
         return {
             "binoculars": self.binoculars.compute_score(text),
-            "biscope": self.biscope.extract_features(text)
+            # "biscope": self.biscope.extract_features(text)
         }
     
     def infer_multiple(self, texts):
@@ -36,13 +36,13 @@ class BiWorker:
                 
             results[i] = {
                 "binoculars": self.binoculars.compute_score(text),
-                "biscope": self.biscope.extract_features(text)
+                # "biscope": self.biscope.extract_features(text)
             }
             
         return results
     
     def shutdown(self):
         del self.binoculars
-        del self.biscope
+        # del self.biscope
         gc.collect()
         torch.cuda.empty_cache()
