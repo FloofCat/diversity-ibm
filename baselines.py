@@ -146,5 +146,5 @@ if __name__ == "__main__":
     # Check the column "source_file" and if its test.csv
     train_df = train_df
     # Ensure that there is 2500 label 0 samples, 2500 label 1 samples
-    texts = train_df["text"]  
+    texts = train_df["text"][lim1:lim2] 
     baselines.log_results(diversity_worker.infer_multiple(texts), f"diversity_results_{lim1}-{lim2}.json")
