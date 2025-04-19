@@ -13,6 +13,7 @@ from radar_detector import RadarWorker
 from raidar_detector import RaidarWorker
 from other_detector import OtherWorker
 from bi_detector import BiWorker
+from diversity_detector import DiversityWorker
 
 lim1 = 0
 lim2 = 200000
@@ -138,11 +139,12 @@ if __name__ == "__main__":
     # radar_worker = RadarWorker("TrustSafeAI/RADAR-Vicuna-7B")
     # raidar_worker = RaidarWorker("tiiuae/falcon-7b-instruct")
     # other_worker = OtherWorker("../model-cache/T5Sentinel.0613.pt")
-    bi_worker = BiWorker("tiiuae/falcon-7b", "tiiuae/falcon-7b-instruct")
+    # bi_worker = BiWorker("tiiuae/falcon-7b", "tiiuae/falcon-7b-instruct")
+    diversity_worker = DiversityWorker("tiiuae/falcon-7b")
     train_df = pd.read_csv("./../cross_domains_cross_models.csv")
     
     # Check the column "source_file" and if its test.csv
-    train_df = train_df[train_df["source_file"] == "test.csv"]
+    train_df = train_df
     # Ensure that there is 2500 label 0 samples, 2500 label 1 samples
     texts = train_df["text"]  
-    baselines.log_results(bi_worker.infer_multiple(texts), f"bi_results_{lim1}-{lim2}.json")
+    baselines.log_results(diversity_worker.infer_multiple(texts), f"diversity_results_{lim1}-{lim2}.json")
