@@ -152,12 +152,12 @@ class Baselines:
 if __name__ == "__main__":
     print("What is happening? Has this docker image actually imported yet?")
     baselines = Baselines()
-    gpt2_worker = GPT2Worker("./model-cache/gpt2")
+    # gpt2_worker = GPT2Worker("./model-cache/gpt2")
     # roberta_worker = RobertaWorker("./model-cache/roberta")
     # other_worker = OtherWorker("meow")
     
     train_df = pd.read_csv("./model-cache/raid/test.csv")
     texts = train_df["generation"][0:].tolist()
 
-    baselines.log_results(roberta_worker.infer_multiple(texts), f"test-gpt2_results_{lim1}-{lim2}.json")
+    # baselines.log_results(roberta_worker.infer_multiple(texts), f"test-gpt2_results_{lim1}-{lim2}.json")
     run(texts) # other worker
