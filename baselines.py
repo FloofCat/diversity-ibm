@@ -156,7 +156,7 @@ if __name__ == "__main__":
     # roberta_worker = RobertaWorker("./model-cache/roberta")
     # other_worker = OtherWorker("meow")
     
-    train_df = pd.read_csv("./model-cache/raid/test.csv")
+    train_df = pd.read_csv("./model-cache/raid/train.csv")
     texts = train_df["generation"][0:].tolist()
 
     # baselines.log_results(roberta_worker.infer_multiple(texts), f"test-gpt2_results_{lim1}-{lim2}.json")
