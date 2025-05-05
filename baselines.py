@@ -13,6 +13,7 @@ from other_detector import run
 
 lim1 = 0
 lim2 = 25000
+INDEX = 1
 
 class Baselines:
     def __init__(self):
@@ -152,12 +153,12 @@ class Baselines:
 if __name__ == "__main__":
     print("What is happening? Has this docker image actually imported yet?")
     baselines = Baselines()
-    gpt2_worker = GPT2Worker("./model-cache/gpt2")
+    gpt2_worker = GPT2Worker("./model-cache/binoculars_performer")
     # roberta_worker = RobertaWorker("./model-cache/roberta")
     # other_worker = OtherWorker("meow")
     
-    train_df = pd.read_csv("./model-cache/raid/test.csv")
-    texts = train_df["generation"][0:].tolist()
+    train_df = pd.read_csv("./model-cache/raid/train.csv")
+    texts = train_df["generation"][(INDEX-1)*1000000:INDEX*1000000].tolist()
 
     # run(texts) # other worker
-    baselines.log_results(gpt2_worker.infer_multiple(texts), f"test-gpt2_results_{lim1}-{lim2}.json")
+    baselines.log_results(gpt2_worker.infer_multiple(texts), f"train-gpt2_results_{INDEX}.json")

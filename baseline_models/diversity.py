@@ -38,7 +38,7 @@ class Diversity:
         surprisals = self.compute_surprisal(text)
         log_likelihoods = self.compute_log_likelihoods(text)
         if len(surprisals) < 10 or len(log_likelihoods) < 3:
-            return None
+            return self.compute_features(text)
 
         s = np.array(surprisals)
         mean_s, std_s, var_s, skew_s, kurt_s = np.mean(s), np.std(s), np.var(s), skew(s), kurtosis(s)
